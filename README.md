@@ -42,9 +42,9 @@ const fileBuffer = await readFile("./path/to/your/file.jpg");
 const result = await api.uploadFile(fileBuffer, "my-file.jpg", "YOUR_TOKEN");
 
 if (result.success) {
-    console.log("Lien de téléchargement:", result.downloadPage);
+	console.log("Lien de téléchargement:", result.downloadPage);
 } else {
-    console.error("Erreur:", result.error);
+	console.error("Erreur:", result.error);
 }
 ```
 
@@ -58,7 +58,7 @@ const result = await api.uploadFileToFolder(fileBuffer, "my-file.jpg");
 
 Le projet suit les principes de clean architecture :
 
-```
+```text
 src/
 ├── types/              # Types et interfaces TypeScript
 ├── interfaces/         # Ports (contrats d'interface)
