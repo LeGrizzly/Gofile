@@ -86,7 +86,7 @@ jobs:
               run: |
                   # Create a copy of package.json for publishing
                   cp package.json package.json.backup
-                  
+
                   # Update package.json for GitHub Package Registry
                   node -e "
                     const fs = require('fs');
@@ -97,7 +97,7 @@ jobs:
                     };
                     fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2));
                   "
-                  
+
                   echo "Updated package.json for publishing:"
                   cat package.json
 
