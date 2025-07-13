@@ -1,6 +1,6 @@
 {
 	"name": "gofile",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "Simple API for uploading files to Gofile.io",
 	"license": "ISC",
 	"author": "LeGrizzly",
