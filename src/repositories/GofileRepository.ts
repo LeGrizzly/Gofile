@@ -61,7 +61,23 @@ export class GofileRepository implements IGofileRepository {
 		formData.append("token", request.token);
 		formData.append("folderId", request.folderId);
 
-		const blob = new Blob([request.file]);
+		let arrayBuffer: ArrayBuffer | undefined;
+		if (request.file.buffer instanceof ArrayBuffer) {
+			arrayBuffer = request.file.buffer;
+		} else if (
+			typeof SharedArrayBuffer !== "undefined" &&
+			request.file.buffer instanceof SharedArrayBuffer
+		) {
+			// Convert SharedArrayBuffer to ArrayBuffer
+			const shared = new Uint8Array(request.file.buffer);
+			arrayBuffer = new Uint8Array(shared).buffer.slice(0);
+		} else {
+			arrayBuffer = undefined;
+		}
+		if (!arrayBuffer) {
+			throw new Error("Unsupported buffer type for file upload.");
+		}
+		const blob = new Blob([new Uint8Array(arrayBuffer)]);
 		formData.append("file", blob, request.fileName);
 
 		const response = await fetch(url, {

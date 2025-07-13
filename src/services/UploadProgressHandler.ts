@@ -8,12 +8,27 @@ import type {
 } from "../types/index.js";
 import type { IGofileRepository } from "../interfaces/IGofileRepository.js";
 
-export class UploadProgressHandler extends UploadEventEmitter implements UploadProgressResult {
+type UploadProgressEvents = {
+	uploadProgress: UploadProgress;
+	done: MultipleUploadResult;
+};
+
+export class UploadProgressHandler
+	extends UploadEventEmitter<UploadProgressEvents>
+	implements UploadProgressResult
+{
 	private repository: IGofileRepository;
 	private files: FileToUpload[];
 	private token: string;
 	private parentFolderId: string;
 	private isPublic: boolean;
+
+	on<K extends keyof UploadProgressEvents>(
+		event: K,
+		listener: (data: UploadProgressEvents[K]) => void
+	): void {
+		super.on(event, listener);
+	}
 
 	constructor(
 		repository: IGofileRepository,
