@@ -21,7 +21,7 @@ export class AuthenticationService {
 			console.log(`   User ID: ${config.userId}`);
 			console.log(`   Tier: ${config.tier}`);
 			console.log(`   Root Folder: ${config.rootFolder}`);
-			console.log(`   Token: ${config.token.slice(0, 10)}...`);
+			console.log(`   Token: ${config.token}...`);
 
 			return config;
 		} catch (error) {

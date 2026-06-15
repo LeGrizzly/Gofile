@@ -5,6 +5,8 @@ import type {
 	UploadFileResponse,
 	GofileConfig,
 	AccountResponse,
+	UpdateContentRequest,
+	UpdateContentResponse
 } from "../types/index.js";
 import type { IGofileRepository } from "../interfaces/IGofileRepository.js";
 
@@ -23,7 +25,7 @@ export class GofileRepository implements IGofileRepository {
 		console.log("Creating folder with request:", {
 			parentFolderId: request.parentFolderId,
 			public: request.public,
-			token: request.token.slice(0, 10) + "...",
+			token: request.token,
 		});
 
 		const url = `${this.config.baseUrl}/contents/createfolder`;
@@ -126,5 +128,35 @@ export class GofileRepository implements IGofileRepository {
 		}
 
 		return result;
+	}
+	async updateContent(request: UpdateContentRequest): Promise<UpdateContentResponse> {
+		const baseUrl = this.config.baseUrl || "https://api.gofile.io";
+		const url = `${baseUrl}/contents/${request.contentId}/update`;
+		
+		const body: any = {
+			attribute: request.attribute,
+			attributeValue: request.attributeValue
+		};
+		
+		if (request.recursive !== undefined) {
+			body.recursive = request.recursive;
+		}
+
+		const response = await fetch(url, {
+			method: "PUT",
+			headers: {
+				"Authorization": `Bearer ${request.token}`,
+				"Content-Type": "application/json",
+				"Accept": "application/json",
+			},
+			body: JSON.stringify(body),
+		});
+
+		const data = await response.json() as UpdateContentResponse;
+		if (data.status !== "ok") {
+			throw new Error(`Gofile API Error: ${data.status}`);
+		}
+
+		return data;
 	}
 }
