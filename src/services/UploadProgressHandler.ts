@@ -22,6 +22,7 @@ export class UploadProgressHandler
 	private token: string;
 	private parentFolderId: string;
 	private isPublic: boolean;
+	private createSubfolder: boolean;
 
 	on<K extends keyof UploadProgressEvents>(
 		event: K,
@@ -35,7 +36,8 @@ export class UploadProgressHandler
 		files: FileToUpload[],
 		token: string,
 		parentFolderId: string,
-		isPublic: boolean = true
+		isPublic: boolean = true,
+		createSubfolder: boolean = true
 	) {
 		super();
 		this.repository = repository;
@@ -43,18 +45,25 @@ export class UploadProgressHandler
 		this.token = token;
 		this.parentFolderId = parentFolderId;
 		this.isPublic = isPublic;
+		this.createSubfolder = createSubfolder;
 
 		this.startUpload();
 	}
 
 	private async startUpload(): Promise<void> {
 		try {
-			const folderResponse = await this.repository.createFolder({
-				token: this.token,
-				parentFolderId: this.parentFolderId,
-				public: this.isPublic,
-			});
-			const folderId = folderResponse.data.id;
+			let folderId = this.parentFolderId;
+			let folderCode: string | undefined;
+
+			if (this.createSubfolder) {
+				const folderResponse = await this.repository.createFolder({
+					token: this.token,
+					parentFolderId: this.parentFolderId,
+					public: this.isPublic,
+				});
+				folderId = folderResponse.data.id;
+				folderCode = folderResponse.data.code;
+			}
 
 			const results: UploadResult[] = [];
 
@@ -75,6 +84,10 @@ export class UploadProgressHandler
 						file: fileToUpload.file,
 						fileName: fileToUpload.fileName,
 					});
+
+					if (!folderCode && !this.createSubfolder) {
+						folderCode = uploadResponse.data.parentFolderCode;
+					}
 
 					const result: UploadResult = {
 						success: true,
@@ -119,9 +132,7 @@ export class UploadProgressHandler
 				success: allSuccess,
 				results,
 				folderId,
-				downloadPage: folderResponse.data.code
-					? `https://gofile.io/d/${folderResponse.data.code}`
-					: undefined,
+				downloadPage: folderCode ? `https://gofile.io/d/${folderCode}` : undefined,
 				error: allSuccess
 					? undefined
 					: `${successCount}/${this.files.length} files uploaded successfully`,

@@ -9,10 +9,11 @@ import type {
 import type { IGofileRepository } from "../interfaces/IGofileRepository.js";
 
 export class GofileRepository implements IGofileRepository {
-	private readonly config: Required<GofileConfig>;
+	private readonly config: GofileConfig & { baseUrl: string; uploadUrl: string };
 
 	constructor(config: GofileConfig) {
 		this.config = {
+			...config,
 			baseUrl: config.baseUrl ?? "https://api.gofile.io",
 			uploadUrl: config.uploadUrl ?? "https://upload.gofile.io",
 		};

@@ -49,6 +49,9 @@ export interface UploadFileResponse {
 export interface GofileConfig {
 	baseUrl?: string;
 	uploadUrl?: string;
+	token?: string;
+	folderId?: string;
+	createSubfolder?: boolean;
 }
 
 export interface UploadResult {

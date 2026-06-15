@@ -15,15 +15,19 @@ export class FileUploadService {
 		fileName: string,
 		token: string,
 		parentFolderId: string,
-		isPublic: boolean = true
+		isPublic: boolean = true,
+		createSubfolder: boolean = true
 	): Promise<UploadResult> {
 		try {
-			const folderResponse = await this.repository.createFolder({
-				token,
-				parentFolderId: parentFolderId,
-				public: isPublic,
-			});
-			const folderId = folderResponse.data.id;
+			let folderId = parentFolderId;
+			if (createSubfolder) {
+				const folderResponse = await this.repository.createFolder({
+					token,
+					parentFolderId: parentFolderId,
+					public: isPublic,
+				});
+				folderId = folderResponse.data.id;
+			}
 
 			const uploadResponse = await this.repository.uploadFile({
 				token,
@@ -52,15 +56,22 @@ export class FileUploadService {
 		files: FileToUpload[],
 		token: string,
 		parentFolderId: string,
-		isPublic: boolean = true
+		isPublic: boolean = true,
+		createSubfolder: boolean = true
 	): Promise<MultipleUploadResult> {
 		try {
-			const folderResponse = await this.repository.createFolder({
-				token,
-				parentFolderId: parentFolderId,
-				public: isPublic,
-			});
-			const folderId = folderResponse.data.id;
+			let folderId = parentFolderId;
+			let folderCode: string | undefined;
+
+			if (createSubfolder) {
+				const folderResponse = await this.repository.createFolder({
+					token,
+					parentFolderId: parentFolderId,
+					public: isPublic,
+				});
+				folderId = folderResponse.data.id;
+				folderCode = folderResponse.data.code;
+			}
 
 			const results: UploadResult[] = [];
 
@@ -72,6 +83,10 @@ export class FileUploadService {
 						file: fileToUpload.file,
 						fileName: fileToUpload.fileName,
 					});
+
+					if (!folderCode && !createSubfolder) {
+						folderCode = uploadResponse.data.parentFolderCode;
+					}
 
 					results.push({
 						success: true,
@@ -93,9 +108,7 @@ export class FileUploadService {
 				success: allSuccess,
 				results,
 				folderId,
-				downloadPage: folderResponse.data.code
-					? `https://gofile.io/d/${folderResponse.data.code}`
-					: undefined,
+				downloadPage: folderCode ? `https://gofile.io/d/${folderCode}` : undefined,
 				error: allSuccess
 					? undefined
 					: `${successCount}/${files.length} files uploaded successfully`,
@@ -116,8 +129,16 @@ export class FileUploadService {
 		files: FileToUpload[],
 		token: string,
 		parentFolderId: string,
-		isPublic: boolean = true
+		isPublic: boolean = true,
+		createSubfolder: boolean = true
 	): UploadProgressResult {
-		return new UploadProgressHandler(this.repository, files, token, parentFolderId, isPublic);
+		return new UploadProgressHandler(
+			this.repository,
+			files,
+			token,
+			parentFolderId,
+			isPublic,
+			createSubfolder
+		);
 	}
 }

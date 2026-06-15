@@ -13,11 +13,11 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/xalsie/gofile.git"
+		"url": "git+https://github.com/LeGrizzly/gofile.git"
 	},
-	"homepage": "https://github.com/xalsie/gofile#readme",
+	"homepage": "https://github.com/LeGrizzly/gofile#readme",
 	"bugs": {
-		"url": "https://github.com/xalsie/gofile/issues"
+		"url": "https://github.com/LeGrizzly/gofile/issues"
 	},
 	"keywords": [
 		"gofile",
@@ -36,19 +36,19 @@
 		"prepublishOnly": "npm run build"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.31.0",
-		"@eslint/markdown": "^7.0.0",
-		"@types/node": "^24.0.13",
-		"@typescript-eslint/eslint-plugin": "^8.36.0",
-		"@typescript-eslint/parser": "^8.36.0",
-		"eslint": "^9.31.0",
-		"eslint-config-prettier": "^10.1.5",
-		"eslint-plugin-prettier": "^5.5.1",
-		"globals": "^16.3.0",
-		"prettier": "^3.6.2",
+		"@eslint/js": "^10.0.1",
+		"@eslint/markdown": "^8.0.2",
+		"@types/node": "^25.9.3",
+		"@typescript-eslint/eslint-plugin": "^8.61.0",
+		"@typescript-eslint/parser": "^8.61.0",
+		"eslint": "^10.5.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-prettier": "^5.5.6",
+		"globals": "^17.6.0",
+		"prettier": "^3.8.4",
 		"ts-node": "^10.9.2",
-		"typescript": "^5.8.3",
-		"typescript-eslint": "^8.36.0"
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.61.0"
 	},
 	"engines": {
 		"node": ">=24.0.0"

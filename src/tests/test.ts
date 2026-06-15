@@ -1,4 +1,5 @@
 import { GofileAPI, type FileToUpload } from "../index.js";
+import { Buffer } from "node:buffer";
 
 async function progressExample() {
 	console.log("Gofile Upload with Progress Example");
@@ -72,4 +73,52 @@ async function progressExample() {
 	}
 }
 
-progressExample().catch(console.error);
+async function multipartSameLinkExample() {
+	console.log("\n\nTest: Multipart sur le même lien (uploadMultipleFiles)");
+	console.log("========================================================\n");
+
+	const api = new GofileAPI({});
+
+	try {
+		const files: FileToUpload[] = [
+			{
+				file: Buffer.from("Contenu du fichier multipart 1"),
+				fileName: "multipart-1.txt",
+			},
+			{
+				file: Buffer.from("Contenu du fichier multipart 2"),
+				fileName: "multipart-2.txt",
+			},
+		];
+
+		console.log(`Uploading ${files.length} files to the same link...`);
+
+		const result = await api.uploadMultipleFiles(files);
+
+		console.log("Final results:", {
+			success: result.success,
+			totalFiles: files.length,
+			successfulUploads: result.results?.filter((r) => r.success).length,
+			folderId: result.folderId,
+			downloadPage: result.downloadPage,
+			error: result.error,
+		});
+
+		if (result.success) {
+			console.log(
+				`\nSuccès ! Les fichiers ont été uploadés sur le même lien : ${result.downloadPage}`
+			);
+		} else {
+			console.error("\nÉchec du test multipart.");
+		}
+	} catch (error) {
+		console.error("Error:", error);
+	}
+}
+
+async function runAllTests() {
+	await progressExample();
+	await multipartSameLinkExample();
+}
+
+runAllTests().catch(console.error);
