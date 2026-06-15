@@ -17,8 +17,10 @@ import type {
 export class GofileAPI {
 	private readonly fileUploadService: FileUploadService;
 	private readonly authenticationService: AuthenticationService;
+	private readonly config: GofileConfig;
 
 	constructor(config: GofileConfig) {
+		this.config = config;
 		const repository = new GofileRepository(config);
 		this.fileUploadService = new FileUploadService(repository);
 		this.authenticationService = new AuthenticationService(repository);
@@ -29,6 +31,14 @@ export class GofileAPI {
 	 * @returns Authenticated configuration with token and root folder
 	 */
 	async authenticate(): Promise<AuthenticatedConfig> {
+		if (this.config.token && this.config.folderId) {
+			return {
+				token: this.config.token,
+				rootFolder: this.config.folderId,
+				userId: "provided",
+				tier: "provided",
+			};
+		}
 		return await this.authenticationService.authenticate();
 	}
 
@@ -46,13 +56,15 @@ export class GofileAPI {
 	): Promise<UploadResult> {
 		console.log("Authenticating for file upload...");
 		const authConfig = await this.authenticate();
+		const createSubfolder = this.config.createSubfolder ?? true;
 
 		return this.fileUploadService.uploadFile(
 			file,
 			fileName,
 			authConfig.token,
 			authConfig.rootFolder,
-			isPublic
+			isPublic,
+			createSubfolder
 		);
 	}
 
@@ -68,12 +80,14 @@ export class GofileAPI {
 	): Promise<MultipleUploadResult> {
 		console.log("Authenticating for multiple files upload...");
 		const authConfig = await this.authenticate();
+		const createSubfolder = this.config.createSubfolder ?? true;
 
 		return this.fileUploadService.uploadMultipleFiles(
 			files,
 			authConfig.token,
 			authConfig.rootFolder,
-			isPublic
+			isPublic,
+			createSubfolder
 		);
 	}
 
@@ -89,12 +103,14 @@ export class GofileAPI {
 	): Promise<UploadProgressResult> {
 		console.log("Authenticating for files upload with progress...");
 		const authConfig = await this.authenticate();
+		const createSubfolder = this.config.createSubfolder ?? true;
 
 		return this.fileUploadService.uploadFiles(
 			files,
 			authConfig.token,
 			authConfig.rootFolder,
-			isPublic
+			isPublic,
+			createSubfolder
 		);
 	}
 }
