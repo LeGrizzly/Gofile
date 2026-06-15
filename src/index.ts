@@ -1,6 +1,7 @@
 import { GofileRepository } from "./repositories/GofileRepository.js";
 import { FileUploadService } from "./services/FileUploadService.js";
-import { AuthenticationService } from "./services/AuthenticationService.js";
+import { ContentService } from "./services/ContentService.js";
+import { GofileAuth } from "./GofileAuth.js";
 import type {
 	GofileConfig,
 	UploadResult,
@@ -11,39 +12,31 @@ import type {
 } from "./types/index.js";
 
 /**
- * Main API client for Gofile file uploads with automatic authentication
- * Follows clean architecture principles with dependency injection
+ * Main API client for Gofile file uploads.
+ * Requires injected account information.
+ * Follows clean architecture principles with dependency injection.
  */
 export class GofileAPI {
 	private readonly fileUploadService: FileUploadService;
-	private readonly authenticationService: AuthenticationService;
+	private readonly contentService: ContentService;
+	private readonly account: AuthenticatedConfig;
 	private readonly config: GofileConfig;
 
-	constructor(config: GofileConfig) {
+	/**
+	 * Initialize GofileAPI with an injected account
+	 * @param account The account credentials (token, rootFolder)
+	 * @param config Optional configuration like createSubfolder
+	 */
+	constructor(account: AuthenticatedConfig, config: GofileConfig = {}) {
+		this.account = account;
 		this.config = config;
 		const repository = new GofileRepository(config);
 		this.fileUploadService = new FileUploadService(repository);
-		this.authenticationService = new AuthenticationService(repository);
+		this.contentService = new ContentService(repository);
 	}
 
 	/**
-	 * Authenticate and get token + root folder automatically
-	 * @returns Authenticated configuration with token and root folder
-	 */
-	async authenticate(): Promise<AuthenticatedConfig> {
-		if (this.config.token && this.config.folderId) {
-			return {
-				token: this.config.token,
-				rootFolder: this.config.folderId,
-				userId: "provided",
-				tier: "provided",
-			};
-		}
-		return await this.authenticationService.authenticate();
-	}
-
-	/**
-	 * Upload a file with automatic authentication (gets fresh token each time)
+	 * Upload a file
 	 * @param file - File content as Buffer
 	 * @param fileName - Name of the file
 	 * @param isPublic - Whether the folder should be public (default: true)
@@ -54,22 +47,20 @@ export class GofileAPI {
 		fileName: string,
 		isPublic: boolean = true
 	): Promise<UploadResult> {
-		console.log("Authenticating for file upload...");
-		const authConfig = await this.authenticate();
 		const createSubfolder = this.config.createSubfolder ?? true;
 
 		return this.fileUploadService.uploadFile(
 			file,
 			fileName,
-			authConfig.token,
-			authConfig.rootFolder,
+			this.account.token,
+			this.account.rootFolder,
 			isPublic,
 			createSubfolder
 		);
 	}
 
 	/**
-	 * Upload multiple files with automatic authentication (gets fresh token each time)
+	 * Upload multiple files
 	 * @param files - Array of files to upload with their names
 	 * @param isPublic - Whether the folder should be public (default: true)
 	 * @returns Multiple upload result with individual results
@@ -78,21 +69,19 @@ export class GofileAPI {
 		files: FileToUpload[],
 		isPublic: boolean = true
 	): Promise<MultipleUploadResult> {
-		console.log("Authenticating for multiple files upload...");
-		const authConfig = await this.authenticate();
 		const createSubfolder = this.config.createSubfolder ?? true;
 
 		return this.fileUploadService.uploadMultipleFiles(
 			files,
-			authConfig.token,
-			authConfig.rootFolder,
+			this.account.token,
+			this.account.rootFolder,
 			isPublic,
 			createSubfolder
 		);
 	}
 
 	/**
-	 * Upload files with progress events and automatic authentication
+	 * Upload files with progress events
 	 * @param files - Array of files to upload with their names
 	 * @param isPublic - Whether the folder should be public (default: true)
 	 * @returns Upload progress handler with events
@@ -101,19 +90,57 @@ export class GofileAPI {
 		files: FileToUpload[],
 		isPublic: boolean = true
 	): Promise<UploadProgressResult> {
-		console.log("Authenticating for files upload with progress...");
-		const authConfig = await this.authenticate();
 		const createSubfolder = this.config.createSubfolder ?? true;
 
 		return this.fileUploadService.uploadFiles(
 			files,
-			authConfig.token,
-			authConfig.rootFolder,
+			this.account.token,
+			this.account.rootFolder,
 			isPublic,
 			createSubfolder
 		);
 	}
+
+	/**
+	 * Set content public or private
+	 * @param contentId Content ID (folder or file)
+	 * @param isPublic true for public, false for private
+	 * @param recursive apply to all children
+	 */
+	async setPublic(contentId: string, isPublic: boolean, recursive: boolean = true): Promise<boolean> {
+		return this.contentService.setPublic(this.account.token, contentId, isPublic, recursive);
+	}
+
+	/**
+	 * Set content description (markdown supported)
+	 * @param contentId Content ID
+	 * @param description Markdown description
+	 */
+	async setDescription(contentId: string, description: string): Promise<boolean> {
+		return this.contentService.setDescription(this.account.token, contentId, description);
+	}
+
+	/**
+	 * Set content expiry
+	 * @param contentId Content ID
+	 * @param expiry Timestamp in seconds, or null for no expiry
+	 */
+	async setExpiry(contentId: string, expiry: number | null): Promise<boolean> {
+		return this.contentService.setExpiry(this.account.token, contentId, expiry);
+	}
+
+	/**
+	 * Set content tags
+	 * @param contentId Content ID
+	 * @param tags Array of tags
+	 */
+	async setTags(contentId: string, tags: string[]): Promise<boolean> {
+		return this.contentService.setTags(this.account.token, contentId, tags);
+	}
+
 }
+
+export { GofileAuth };
 
 export type {
 	GofileConfig,

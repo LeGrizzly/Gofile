@@ -106,3 +106,16 @@ export interface AuthenticatedConfig {
 	userId: string;
 	tier: string;
 }
+
+export interface UpdateContentRequest {
+	token: string;
+	contentId: string;
+	attribute: "public" | "description" | "expiry" | "tags";
+	attributeValue: string | boolean | number | null;
+	recursive?: boolean;
+}
+
+export interface UpdateContentResponse {
+	status: string;
+	data: Record<string, never>; // Gofile usually returns empty data on success
+}
