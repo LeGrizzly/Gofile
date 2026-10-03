@@ -1,14 +1,14 @@
+import type { IGofileRepository } from "../interfaces/IGofileRepository.js";
 import type {
+	AccountResponse,
 	CreateFolderRequest,
 	CreateFolderResponse,
+	GofileConfig,
+	UpdateContentRequest,
+	UpdateContentResponse,
 	UploadFileRequest,
 	UploadFileResponse,
-	GofileConfig,
-	AccountResponse,
-	UpdateContentRequest,
-	UpdateContentResponse
 } from "../types/index.js";
-import type { IGofileRepository } from "../interfaces/IGofileRepository.js";
 
 export class GofileRepository implements IGofileRepository {
 	private readonly config: GofileConfig & { baseUrl: string; uploadUrl: string };
@@ -40,6 +40,7 @@ export class GofileRepository implements IGofileRepository {
 				parentFolderId: request.parentFolderId,
 				public: request.public,
 			}),
+			signal: AbortSignal.timeout(15000),
 		});
 
 		console.log("Create folder response status:", response.status);
@@ -109,6 +110,7 @@ export class GofileRepository implements IGofileRepository {
 			headers: {
 				"Content-Type": "application/json",
 			},
+			signal: AbortSignal.timeout(15000),
 		});
 
 		console.log("Account authentication response status:", response.status);
@@ -132,12 +134,12 @@ export class GofileRepository implements IGofileRepository {
 	async updateContent(request: UpdateContentRequest): Promise<UpdateContentResponse> {
 		const baseUrl = this.config.baseUrl || "https://api.gofile.io";
 		const url = `${baseUrl}/contents/${request.contentId}/update`;
-		
+
 		const body: any = {
 			attribute: request.attribute,
-			attributeValue: request.attributeValue
+			attributeValue: request.attributeValue,
 		};
-		
+
 		if (request.recursive !== undefined) {
 			body.recursive = request.recursive;
 		}
@@ -145,14 +147,14 @@ export class GofileRepository implements IGofileRepository {
 		const response = await fetch(url, {
 			method: "PUT",
 			headers: {
-				"Authorization": `Bearer ${request.token}`,
+				Authorization: `Bearer ${request.token}`,
 				"Content-Type": "application/json",
-				"Accept": "application/json",
+				Accept: "application/json",
 			},
 			body: JSON.stringify(body),
 		});
 
-		const data = await response.json() as UpdateContentResponse;
+		const data = (await response.json()) as UpdateContentResponse;
 		if (data.status !== "ok") {
 			throw new Error(`Gofile API Error: ${data.status}`);
 		}

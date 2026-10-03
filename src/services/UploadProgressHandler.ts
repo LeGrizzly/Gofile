@@ -1,12 +1,12 @@
-import { UploadEventEmitter } from "../utils/EventEmitter.js";
-import type {
-	UploadProgress,
-	MultipleUploadResult,
-	FileToUpload,
-	UploadResult,
-	UploadProgressResult,
-} from "../types/index.js";
 import type { IGofileRepository } from "../interfaces/IGofileRepository.js";
+import type {
+	FileToUpload,
+	MultipleUploadResult,
+	UploadProgress,
+	UploadProgressResult,
+	UploadResult,
+} from "../types/index.js";
+import { UploadEventEmitter } from "../utils/EventEmitter.js";
 
 type UploadProgressEvents = {
 	uploadProgress: UploadProgress;

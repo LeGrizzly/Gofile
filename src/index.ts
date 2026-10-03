@@ -1,14 +1,14 @@
-import { GofileRepository } from "./repositories/GofileRepository.js";
-import { FileUploadService } from "./services/FileUploadService.js";
-import { ContentService } from "./services/ContentService.js";
 import { GofileAuth } from "./GofileAuth.js";
+import { GofileRepository } from "./repositories/GofileRepository.js";
+import { ContentService } from "./services/ContentService.js";
+import { FileUploadService } from "./services/FileUploadService.js";
 import type {
-	GofileConfig,
-	UploadResult,
-	FileToUpload,
-	MultipleUploadResult,
 	AuthenticatedConfig,
+	FileToUpload,
+	GofileConfig,
+	MultipleUploadResult,
 	UploadProgressResult,
+	UploadResult,
 } from "./types/index.js";
 
 /**
@@ -107,7 +107,11 @@ export class GofileAPI {
 	 * @param isPublic true for public, false for private
 	 * @param recursive apply to all children
 	 */
-	async setPublic(contentId: string, isPublic: boolean, recursive: boolean = true): Promise<boolean> {
+	async setPublic(
+		contentId: string,
+		isPublic: boolean,
+		recursive: boolean = true
+	): Promise<boolean> {
 		return this.contentService.setPublic(this.account.token, contentId, isPublic, recursive);
 	}
 
@@ -137,16 +141,14 @@ export class GofileAPI {
 	async setTags(contentId: string, tags: string[]): Promise<boolean> {
 		return this.contentService.setTags(this.account.token, contentId, tags);
 	}
-
 }
 
-export { GofileAuth };
-
 export type {
-	GofileConfig,
-	UploadResult,
-	FileToUpload,
-	MultipleUploadResult,
 	AuthenticatedConfig,
+	FileToUpload,
+	GofileConfig,
+	MultipleUploadResult,
 	UploadProgressResult,
+	UploadResult,
 } from "./types/index.js";
+export { GofileAuth };

@@ -1,11 +1,11 @@
 import type {
+	AccountResponse,
 	CreateFolderRequest,
 	CreateFolderResponse,
+	UpdateContentRequest,
+	UpdateContentResponse,
 	UploadFileRequest,
 	UploadFileResponse,
-	AccountResponse,
-	UpdateContentRequest,
-	UpdateContentResponse
 } from "../types/index.js";
 
 export interface IGofileRepository {

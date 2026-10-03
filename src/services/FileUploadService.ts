@@ -1,9 +1,9 @@
 import type { IGofileRepository } from "../interfaces/IGofileRepository.js";
 import type {
-	UploadResult,
 	FileToUpload,
 	MultipleUploadResult,
 	UploadProgressResult,
+	UploadResult,
 } from "../types/index.js";
 import { UploadProgressHandler } from "./UploadProgressHandler.js";
 
