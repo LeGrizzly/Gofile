@@ -11,7 +11,7 @@ export class FileUploadService {
 	constructor(private readonly repository: IGofileRepository) {}
 
 	async uploadFile(
-		file: Buffer,
+		file: Buffer | Blob | Uint8Array,
 		fileName: string,
 		token: string,
 		parentFolderId: string,

@@ -17,8 +17,18 @@ export async function testUpload(api: GofileAPI): Promise<any> {
 	try {
 		const result = await api.uploadFile(file.file, file.fileName);
 		if (result.success) {
-			console.log("✅ File uploaded successfully!");
+			console.log("✅ Buffer File uploaded successfully!");
 			console.log("   Download URL:", result.downloadPage);
+
+			// Test Blob upload
+			console.log("--- Testing Blob File Upload ---");
+			const blob = new Blob(["This is a dummy blob file for testing streaming uploads."]);
+			const blobResult = await api.uploadFile(blob, "dummy_blob_file.txt");
+			if (!blobResult.success) {
+				throw new Error("Blob file upload failed: " + JSON.stringify(blobResult));
+			}
+			console.log("✅ Blob File uploaded successfully!");
+			console.log("   Download URL:", blobResult.downloadPage);
 
 			// Extract the parent folder ID or the uploaded file's parent to use for content testing
 			// Using the root folder configured in API for simplicity since uploadFile puts it there
@@ -28,6 +38,8 @@ export async function testUpload(api: GofileAPI): Promise<any> {
 			throw new Error("File upload failed: " + JSON.stringify(result));
 		}
 	} finally {
-		file.file = Buffer.alloc(0); // Clear the buffer to free memory
+		if (Buffer.isBuffer(file.file)) {
+			file.file = Buffer.alloc(0); // Clear the buffer to free memory
+		}
 	}
 }

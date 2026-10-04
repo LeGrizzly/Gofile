@@ -23,7 +23,7 @@ export interface CreateFolderResponse {
 export interface UploadFileRequest {
 	token: string;
 	folderId: string;
-	file: Buffer;
+	file: Buffer | Blob | Uint8Array;
 	fileName: string;
 }
 
@@ -62,7 +62,7 @@ export interface UploadResult {
 }
 
 export interface FileToUpload {
-	file: Buffer;
+	file: Buffer | Blob | Uint8Array;
 	fileName: string;
 }
 

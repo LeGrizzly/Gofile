@@ -43,7 +43,7 @@ export class GofileAPI {
 	 * @returns Upload result with download page URL or error
 	 */
 	async uploadFile(
-		file: Buffer,
+		file: Buffer | Blob | Uint8Array,
 		fileName: string,
 		isPublic: boolean = true
 	): Promise<UploadResult> {
