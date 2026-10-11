@@ -6,13 +6,18 @@ export class ContentService {
 	/**
 	 * Update content attribute (public/private)
 	 */
-	async setPublic(token: string, contentId: string, isPublic: boolean, recursive: boolean = true): Promise<boolean> {
+	async setPublic(
+		token: string,
+		contentId: string,
+		isPublic: boolean,
+		recursive: boolean = true
+	): Promise<boolean> {
 		const response = await this.repository.updateContent({
 			token,
 			contentId,
 			attribute: "public",
 			attributeValue: isPublic,
-			recursive
+			recursive,
 		});
 		return response.status === "ok";
 	}
@@ -25,7 +30,7 @@ export class ContentService {
 			token,
 			contentId,
 			attribute: "description",
-			attributeValue: description
+			attributeValue: description,
 		});
 		return response.status === "ok";
 	}
@@ -39,7 +44,7 @@ export class ContentService {
 			token,
 			contentId,
 			attribute: "expiry",
-			attributeValue: expiry
+			attributeValue: expiry,
 		});
 		return response.status === "ok";
 	}
@@ -49,12 +54,12 @@ export class ContentService {
 	 * @param tags Array of tags (no spaces allowed)
 	 */
 	async setTags(token: string, contentId: string, tags: string[]): Promise<boolean> {
-		const validTags = tags.map(t => t.replace(/\s+/g, ""));
+		const validTags = tags.map((t) => t.replace(/\s+/g, ""));
 		const response = await this.repository.updateContent({
 			token,
 			contentId,
 			attribute: "tags",
-			attributeValue: validTags.join(",")
+			attributeValue: validTags.join(","),
 		});
 		return response.status === "ok";
 	}
