@@ -7,8 +7,8 @@ export async function testDescription(api: GofileAPI, contentId: string) {
 	const success = await api.setDescription(contentId, description);
 
 	if (success) {
-		console.log(`   ✅ Successfully updated description for content \${contentId}`);
+		console.log(`   ✅ Successfully updated description for content ${contentId}`);
 	} else {
-		throw new Error(`Failed to update description for content \${contentId}`);
+		throw new Error(`Failed to update description for content ${contentId}`);
 	}
 }

@@ -7,17 +7,17 @@ export async function testPublic(api: GofileAPI, contentId: string) {
 	const successPrivate = await api.setPublic(contentId, false, true);
 
 	if (successPrivate) {
-		console.log(`   ✅ Successfully set content \${contentId} to private (recursive: true)`);
+		console.log(`   ✅ Successfully set content ${contentId} to private (recursive: true)`);
 	} else {
-		throw new Error(`Failed to set content \${contentId} to private`);
+		throw new Error(`Failed to set content ${contentId} to private`);
 	}
 
 	// Set to public
 	const successPublic = await api.setPublic(contentId, true, true);
 
 	if (successPublic) {
-		console.log(`   ✅ Successfully set content \${contentId} to public (recursive: true)`);
+		console.log(`   ✅ Successfully set content ${contentId} to public (recursive: true)`);
 	} else {
-		throw new Error(`Failed to set content \${contentId} to public`);
+		throw new Error(`Failed to set content ${contentId} to public`);
 	}
 }

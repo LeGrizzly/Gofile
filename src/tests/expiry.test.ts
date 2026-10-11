@@ -10,18 +10,18 @@ export async function testExpiry(api: GofileAPI, contentId: string) {
 
 	if (success) {
 		console.log(
-			`   ✅ Successfully updated expiry to \${expiryTimestamp} for content \${contentId}`
+			`   ✅ Successfully updated expiry to ${expiryTimestamp} for content ${contentId}`
 		);
 	} else {
-		throw new Error(`Failed to update expiry for content \${contentId}`);
+		throw new Error(`Failed to update expiry for content ${contentId}`);
 	}
 
 	// Unset expiry
 	const successNull = await api.setExpiry(contentId, null);
 
 	if (successNull) {
-		console.log(`   ✅ Successfully removed expiry (null) for content \${contentId}`);
+		console.log(`   ✅ Successfully removed expiry (null) for content ${contentId}`);
 	} else {
-		throw new Error(`Failed to remove expiry for content \${contentId}`);
+		throw new Error(`Failed to remove expiry for content ${contentId}`);
 	}
 }

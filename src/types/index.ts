@@ -58,6 +58,8 @@ export interface UploadResult {
 	success: boolean;
 	downloadPage?: string;
 	fileId?: string;
+	folderId?: string;
+	parentFolder?: string;
 	error?: string;
 }
 
@@ -74,6 +76,8 @@ export interface UploadProgress {
 	success?: boolean;
 	downloadPage?: string;
 	fileId?: string;
+	folderId?: string;
+	parentFolder?: string;
 	error?: string;
 }
 
