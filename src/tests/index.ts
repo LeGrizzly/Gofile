@@ -15,28 +15,30 @@ async function runTests() {
 		console.log("\n[SETUP] Creating Account (GofileAuth)");
 		const account: AuthenticatedConfig = await GofileAuth.createAccount();
 		console.log("✅ Account created successfully!");
-		console.log("   Token:", account.token.slice(0, 10) + "...");
+		console.log("   Token:", `${account.token.slice(0, 10)}...`);
 		console.log("   Root Folder:", account.rootFolder);
 
 		const api = new GofileAPI(account, { createSubfolder: true });
 
 		console.log("\n=== RUNNING TESTS ===");
 
-		// Let's create a shared folder or upload a file to be modified by the content tests
+		// Let's upload a file and use the generated subfolder for content modification tests
 		const uploadResult = await testUpload(api);
-		const testContentId = uploadResult?.fileId;
+		const testFolderId = uploadResult?.folderId;
 
-		if (!testContentId) {
-			throw new Error("Initial upload failed, cannot run content modification tests.");
+		if (!testFolderId) {
+			throw new Error(
+				"Initial upload failed, cannot get folder ID for content modification tests."
+			);
 		}
 
 		await testMultipart(account);
 
 		// Content tests on the generated folder
-		await testTags(api, testContentId);
-		await testDescription(api, testContentId);
-		await testExpiry(api, testContentId);
-		await testPublic(api, testContentId);
+		await testTags(api, testFolderId);
+		await testDescription(api, testFolderId);
+		await testExpiry(api, testFolderId);
+		await testPublic(api, testFolderId);
 
 		console.log("\n=== ALL TESTS PASSED SUCCESSFULLY ===");
 	} catch (e) {

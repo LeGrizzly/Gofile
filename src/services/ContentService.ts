@@ -36,7 +36,10 @@ export class ContentService {
 	}
 
 	/**
-	 * Set content expiry
+	 * Set folder expiry
+	 * Note: Expiry can only be set on folders (not individual files or the root account folder).
+	 * @param token Authentication token
+	 * @param contentId Folder ID
 	 * @param expiry Timestamp in seconds, or null for no expiry
 	 */
 	async setExpiry(token: string, contentId: string, expiry: number | null): Promise<boolean> {

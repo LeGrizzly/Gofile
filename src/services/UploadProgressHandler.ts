@@ -93,6 +93,8 @@ export class UploadProgressHandler
 						success: true,
 						downloadPage: uploadResponse.data.downloadPage,
 						fileId: uploadResponse.data.id,
+						folderId: uploadResponse.data.parentFolder,
+						parentFolder: uploadResponse.data.parentFolder,
 					};
 
 					results.push(result);
@@ -105,6 +107,8 @@ export class UploadProgressHandler
 						success: true,
 						downloadPage: result.downloadPage,
 						fileId: result.fileId,
+						folderId: result.folderId,
+						parentFolder: result.parentFolder,
 					} as UploadProgress);
 				} catch (error) {
 					const result: UploadResult = {

@@ -40,6 +40,8 @@ export class FileUploadService {
 				success: true,
 				downloadPage: uploadResponse.data.downloadPage,
 				fileId: uploadResponse.data.id,
+				folderId: uploadResponse.data.parentFolder,
+				parentFolder: uploadResponse.data.parentFolder,
 			};
 		} catch (error) {
 			return {
@@ -92,6 +94,8 @@ export class FileUploadService {
 						success: true,
 						downloadPage: uploadResponse.data.downloadPage,
 						fileId: uploadResponse.data.id,
+						folderId: uploadResponse.data.parentFolder,
+						parentFolder: uploadResponse.data.parentFolder,
 					});
 				} catch (error) {
 					results.push({

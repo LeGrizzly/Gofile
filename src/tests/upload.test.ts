@@ -1,12 +1,6 @@
-import * as fs from "node:fs";
-import * as path from "node:path";
-import { fileURLToPath } from "node:url";
-import type { FileToUpload, GofileAPI } from "../index.js";
+import type { FileToUpload, GofileAPI, UploadResult } from "../index.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-export async function testUpload(api: GofileAPI): Promise<any> {
+export async function testUpload(api: GofileAPI): Promise<UploadResult> {
 	console.log("\n--- Testing Single File Upload ---");
 
 	const file: FileToUpload = {
@@ -25,17 +19,14 @@ export async function testUpload(api: GofileAPI): Promise<any> {
 			const blob = new Blob(["This is a dummy blob file for testing streaming uploads."]);
 			const blobResult = await api.uploadFile(blob, "dummy_blob_file.txt");
 			if (!blobResult.success) {
-				throw new Error("Blob file upload failed: " + JSON.stringify(blobResult));
+				throw new Error(`Blob file upload failed: ${JSON.stringify(blobResult)}`);
 			}
 			console.log("✅ Blob File uploaded successfully!");
 			console.log("   Download URL:", blobResult.downloadPage);
 
-			// Extract the parent folder ID or the uploaded file's parent to use for content testing
-			// Using the root folder configured in API for simplicity since uploadFile puts it there
-			const folderId = (api as any).account.rootFolder;
-			return { folderId, ...result };
+			return result;
 		} else {
-			throw new Error("File upload failed: " + JSON.stringify(result));
+			throw new Error(`File upload failed: ${JSON.stringify(result)}`);
 		}
 	} finally {
 		if (Buffer.isBuffer(file.file)) {
