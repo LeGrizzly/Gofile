@@ -56,6 +56,7 @@ export interface GofileConfig {
 
 export interface UploadResult {
 	success: boolean;
+	fileName?: string;
 	downloadPage?: string;
 	fileId?: string;
 	folderId?: string;

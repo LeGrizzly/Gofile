@@ -91,6 +91,7 @@ export class UploadProgressHandler
 
 					const result: UploadResult = {
 						success: true,
+						fileName: fileToUpload.fileName,
 						downloadPage: uploadResponse.data.downloadPage,
 						fileId: uploadResponse.data.id,
 						folderId: uploadResponse.data.parentFolder,
@@ -113,6 +114,7 @@ export class UploadProgressHandler
 				} catch (error) {
 					const result: UploadResult = {
 						success: false,
+						fileName: fileToUpload.fileName,
 						error: error instanceof Error ? error.message : "Unknown error occurred",
 					};
 

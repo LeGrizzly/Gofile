@@ -60,43 +60,62 @@ export class GofileRepository implements IGofileRepository {
 
 	async uploadFile(request: UploadFileRequest): Promise<UploadFileResponse> {
 		const url = `${this.config.uploadUrl}/uploadfile`;
+		const maxRetries = 3;
+		let lastError: unknown;
 
-		const formData = new FormData();
-		formData.append("token", request.token);
-		formData.append("folderId", request.folderId);
+		for (let attempt = 1; attempt <= maxRetries; attempt++) {
+			try {
+				const formData = new FormData();
+				formData.append("token", request.token);
+				formData.append("folderId", request.folderId);
 
-		let blob: Blob;
-		if (
-			request.file instanceof Blob ||
-			(typeof (request.file as any)?.stream === "function" &&
-				typeof (request.file as any)?.size === "number")
-		) {
-			blob = request.file as Blob;
-		} else if (Buffer.isBuffer(request.file) || request.file instanceof Uint8Array) {
-			blob = new Blob([request.file as any]);
-		} else {
-			throw new Error(
-				"Unsupported file type for upload. Expected Blob, Buffer, or Uint8Array."
-			);
+				let blob: Blob;
+				if (
+					request.file instanceof Blob ||
+					(typeof (request.file as any)?.stream === "function" &&
+						typeof (request.file as any)?.size === "number")
+				) {
+					blob = request.file as Blob;
+				} else if (Buffer.isBuffer(request.file) || request.file instanceof Uint8Array) {
+					blob = new Blob([request.file as any]);
+				} else {
+					throw new Error(
+						"Unsupported file type for upload. Expected Blob, Buffer, or Uint8Array."
+					);
+				}
+				formData.append("file", blob, request.fileName);
+
+				const response = await fetch(url, {
+					method: "POST",
+					body: formData,
+				});
+
+				if (!response.ok) {
+					throw new Error(
+						`Failed to upload file: ${response.status} ${response.statusText}`
+					);
+				}
+
+				const result = (await response.json()) as UploadFileResponse;
+
+				if (result.status !== "ok") {
+					throw new Error(`API error: ${result.status}`);
+				}
+
+				return result;
+			} catch (error) {
+				lastError = error;
+				if (attempt < maxRetries) {
+					const delay = Math.min(1000 * 2 ** (attempt - 1), 10000);
+					console.warn(
+						`[GofileRepository] Upload failed for ${request.fileName} (attempt ${attempt}/${maxRetries}): ${error instanceof Error ? error.message : String(error)}. Retrying in ${delay}ms...`
+					);
+					await new Promise((resolve) => setTimeout(resolve, delay));
+				}
+			}
 		}
-		formData.append("file", blob, request.fileName);
 
-		const response = await fetch(url, {
-			method: "POST",
-			body: formData,
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to upload file: ${response.status} ${response.statusText}`);
-		}
-
-		const result = (await response.json()) as UploadFileResponse;
-
-		if (result.status !== "ok") {
-			throw new Error(`API error: ${result.status}`);
-		}
-
-		return result;
+		throw lastError instanceof Error ? lastError : new Error(String(lastError));
 	}
 
 	async getAuthenticatedAccount(): Promise<AccountResponse> {

@@ -38,6 +38,7 @@ export class FileUploadService {
 
 			return {
 				success: true,
+				fileName,
 				downloadPage: uploadResponse.data.downloadPage,
 				fileId: uploadResponse.data.id,
 				folderId: uploadResponse.data.parentFolder,
@@ -46,6 +47,7 @@ export class FileUploadService {
 		} catch (error) {
 			return {
 				success: false,
+				fileName,
 				error: error instanceof Error ? error.message : "Unknown error occurred",
 			};
 		}
@@ -92,6 +94,7 @@ export class FileUploadService {
 
 					results.push({
 						success: true,
+						fileName: fileToUpload.fileName,
 						downloadPage: uploadResponse.data.downloadPage,
 						fileId: uploadResponse.data.id,
 						folderId: uploadResponse.data.parentFolder,
@@ -100,6 +103,7 @@ export class FileUploadService {
 				} catch (error) {
 					results.push({
 						success: false,
+						fileName: fileToUpload.fileName,
 						error: error instanceof Error ? error.message : "Unknown error occurred",
 					});
 				}
