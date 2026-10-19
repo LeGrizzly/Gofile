@@ -58,8 +58,54 @@ export class GofileRepository implements IGofileRepository {
 		return result;
 	}
 
+	private static cachedBestServer: { name: string; expiresAt: number } | null = null;
+
+	private async getBestServer(): Promise<string> {
+		if (
+			GofileRepository.cachedBestServer &&
+			Date.now() < GofileRepository.cachedBestServer.expiresAt
+		) {
+			return GofileRepository.cachedBestServer.name;
+		}
+
+		try {
+			const response = await fetch(`${this.config.baseUrl}/servers`, {
+				signal: AbortSignal.timeout(4000),
+			});
+			if (response.ok) {
+				const result = (await response.json()) as any;
+				if (
+					result.status === "ok" &&
+					Array.isArray(result.data?.servers) &&
+					result.data.servers.length > 0
+				) {
+					const best = result.data.servers[0].name;
+					GofileRepository.cachedBestServer = {
+						name: best,
+						expiresAt: Date.now() + 10 * 60 * 1000,
+					};
+					return best;
+				}
+			}
+		} catch (error) {
+			console.warn(
+				"[GofileRepository] Failed to query optimal server from /servers API, using fallback",
+				error
+			);
+		}
+
+		return "";
+	}
+
 	async uploadFile(request: UploadFileRequest): Promise<UploadFileResponse> {
-		const url = `${this.config.uploadUrl}/uploadfile`;
+		let uploadBase = this.config.uploadUrl;
+		if (uploadBase === "https://upload.gofile.io") {
+			const best = await this.getBestServer();
+			if (best) {
+				uploadBase = `https://${best}.gofile.io/contents`;
+			}
+		}
+		const url = `${uploadBase}/uploadfile`;
 		const maxRetries = 3;
 		let lastError: unknown;
 
