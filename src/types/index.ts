@@ -21,7 +21,7 @@ export interface GofileServersResponse {
 }
 
 export interface UpdateContentBody {
-	attribute: "public" | "description" | "expiry" | "tags";
+	attribute: "name" | "public" | "description" | "expiry" | "tags";
 	attributeValue: string | boolean | number | null;
 	recursive?: boolean;
 }
@@ -141,7 +141,7 @@ export interface AuthenticatedConfig {
 export interface UpdateContentRequest {
 	token: string;
 	contentId: string;
-	attribute: "public" | "description" | "expiry" | "tags";
+	attribute: "name" | "public" | "description" | "expiry" | "tags";
 	attributeValue: string | boolean | number | null;
 	recursive?: boolean;
 }
