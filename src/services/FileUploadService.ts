@@ -2,16 +2,18 @@ import type { IGofileRepository } from "../interfaces/IGofileRepository.js";
 import type {
 	FileToUpload,
 	MultipleUploadResult,
+	UploadFileInput,
 	UploadProgressResult,
 	UploadResult,
 } from "../types/index.js";
+import { getErrorMessage } from "../utils/TypeGuards.js";
 import { UploadProgressHandler } from "./UploadProgressHandler.js";
 
 export class FileUploadService {
 	constructor(private readonly repository: IGofileRepository) {}
 
 	async uploadFile(
-		file: Buffer | Blob | Uint8Array,
+		file: UploadFileInput,
 		fileName: string,
 		token: string,
 		parentFolderId: string,
@@ -48,7 +50,7 @@ export class FileUploadService {
 			return {
 				success: false,
 				fileName,
-				error: error instanceof Error ? error.message : "Unknown error occurred",
+				error: getErrorMessage(error),
 			};
 		}
 	}
@@ -104,7 +106,7 @@ export class FileUploadService {
 					results.push({
 						success: false,
 						fileName: fileToUpload.fileName,
-						error: error instanceof Error ? error.message : "Unknown error occurred",
+						error: getErrorMessage(error),
 					});
 				}
 			}
@@ -125,7 +127,7 @@ export class FileUploadService {
 			return {
 				success: false,
 				results: [],
-				error: error instanceof Error ? error.message : "Unknown error occurred",
+				error: getErrorMessage(error),
 			};
 		}
 	}

@@ -4,11 +4,14 @@ import type {
 	CreateFolderRequest,
 	CreateFolderResponse,
 	GofileConfig,
+	GofileServersResponse,
+	UpdateContentBody,
 	UpdateContentRequest,
 	UpdateContentResponse,
 	UploadFileRequest,
 	UploadFileResponse,
 } from "../types/index.js";
+import { toBlob, toError } from "../utils/TypeGuards.js";
 
 export class GofileRepository implements IGofileRepository {
 	private readonly config: GofileConfig & { baseUrl: string; uploadUrl: string };
@@ -73,7 +76,7 @@ export class GofileRepository implements IGofileRepository {
 				signal: AbortSignal.timeout(4000),
 			});
 			if (response.ok) {
-				const result = (await response.json()) as any;
+				const result = (await response.json()) as GofileServersResponse;
 				if (
 					result.status === "ok" &&
 					Array.isArray(result.data?.servers) &&
@@ -107,7 +110,7 @@ export class GofileRepository implements IGofileRepository {
 		}
 		const url = `${uploadBase}/uploadfile`;
 		const maxRetries = 3;
-		let lastError: unknown;
+		let lastError: unknown = new Error("Upload failed with unknown error");
 
 		for (let attempt = 1; attempt <= maxRetries; attempt++) {
 			try {
@@ -115,20 +118,7 @@ export class GofileRepository implements IGofileRepository {
 				formData.append("token", request.token);
 				formData.append("folderId", request.folderId);
 
-				let blob: Blob;
-				if (
-					request.file instanceof Blob ||
-					(typeof (request.file as any)?.stream === "function" &&
-						typeof (request.file as any)?.size === "number")
-				) {
-					blob = request.file as Blob;
-				} else if (Buffer.isBuffer(request.file) || request.file instanceof Uint8Array) {
-					blob = new Blob([request.file as any]);
-				} else {
-					throw new Error(
-						"Unsupported file type for upload. Expected Blob, Buffer, or Uint8Array."
-					);
-				}
+				const blob = await toBlob(request.file);
 				formData.append("file", blob, request.fileName);
 
 				const response = await fetch(url, {
@@ -161,7 +151,7 @@ export class GofileRepository implements IGofileRepository {
 			}
 		}
 
-		throw lastError instanceof Error ? lastError : new Error(String(lastError));
+		throw toError(lastError);
 	}
 
 	async getAuthenticatedAccount(): Promise<AccountResponse> {
@@ -197,14 +187,11 @@ export class GofileRepository implements IGofileRepository {
 		const baseUrl = this.config.baseUrl || "https://api.gofile.io";
 		const url = `${baseUrl}/contents/${request.contentId}/update`;
 
-		const body: any = {
+		const body: UpdateContentBody = {
 			attribute: request.attribute,
 			attributeValue: request.attributeValue,
+			...(request.recursive !== undefined ? { recursive: request.recursive } : {}),
 		};
-
-		if (request.recursive !== undefined) {
-			body.recursive = request.recursive;
-		}
 
 		const response = await fetch(url, {
 			method: "PUT",

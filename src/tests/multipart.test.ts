@@ -1,5 +1,5 @@
 import { GofileAPI } from "../index.js";
-import type { AuthenticatedConfig } from "../types/index.js";
+import type { AuthenticatedConfig, MultipleUploadResult } from "../types/index.js";
 
 export async function testMultipart(account: AuthenticatedConfig) {
 	console.log("\n--- Testing Multipart Upload Simulation (api1 -> api2) ---");
@@ -9,9 +9,15 @@ export async function testMultipart(account: AuthenticatedConfig) {
 	const part1Files = [{ file: Buffer.from("Part 1 content"), fileName: "part1.zip" }];
 
 	const handler1 = await api1.uploadFiles(part1Files);
-	const result1 = await new Promise<any>((resolve) => handler1.on("done", resolve));
+	const result1 = await new Promise<MultipleUploadResult>((resolve) =>
+		handler1.on("done", resolve)
+	);
 
 	console.log("   ✅ Part 1 uploaded to folder ID:", result1.folderId);
+
+	if (!result1.folderId) {
+		throw new Error("FAILED: Part 1 upload did not return a folder ID!");
+	}
 
 	const account2: AuthenticatedConfig = {
 		token: account.token,
@@ -24,7 +30,9 @@ export async function testMultipart(account: AuthenticatedConfig) {
 	const part2Files = [{ file: Buffer.from("Part 2 content"), fileName: "part2.zip" }];
 
 	const handler2 = await api2.uploadFiles(part2Files);
-	const result2 = await new Promise<any>((resolve) => handler2.on("done", resolve));
+	const result2 = await new Promise<MultipleUploadResult>((resolve) =>
+		handler2.on("done", resolve)
+	);
 
 	console.log("   ✅ Part 2 uploaded to folder ID:", result2.folderId);
 

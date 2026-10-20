@@ -7,6 +7,7 @@ import type {
 	FileToUpload,
 	GofileConfig,
 	MultipleUploadResult,
+	UploadFileInput,
 	UploadProgressResult,
 	UploadResult,
 } from "./types/index.js";
@@ -37,13 +38,13 @@ export class GofileAPI {
 
 	/**
 	 * Upload a file
-	 * @param file - File content as Buffer
+	 * @param file - File content as UploadFileInput (Blob, Buffer, Uint8Array, or ReadableStream)
 	 * @param fileName - Name of the file
 	 * @param isPublic - Whether the folder should be public (default: true)
 	 * @returns Upload result with download page URL or error
 	 */
 	async uploadFile(
-		file: Buffer | Blob | Uint8Array,
+		file: UploadFileInput,
 		fileName: string,
 		isPublic: boolean = true
 	): Promise<UploadResult> {
@@ -146,10 +147,16 @@ export class GofileAPI {
 
 export type {
 	AuthenticatedConfig,
+	BlobLike,
 	FileToUpload,
 	GofileConfig,
+	GofileServerInfo,
+	GofileServersResponse,
 	MultipleUploadResult,
+	UpdateContentBody,
+	UploadFileInput,
 	UploadProgressResult,
 	UploadResult,
 } from "./types/index.js";
+export * from "./utils/TypeGuards.js";
 export { GofileAuth };

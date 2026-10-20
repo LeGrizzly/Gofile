@@ -38,7 +38,7 @@
 			},
 			"suspicious": {
 				"noConsole": "off",
-				"noExplicitAny": "off",
+				"noExplicitAny": "error",
 				"useIterableCallbackReturn": "off"
 			}
 		}
