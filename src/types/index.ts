@@ -1,6 +1,14 @@
+import type { Readable } from "node:stream";
+
 // Domain types for Gofile API
 
-export type UploadFileInput = Blob | Buffer | Uint8Array | ReadableStream;
+export type UploadFileInput =
+	| Blob
+	| Buffer
+	| Uint8Array
+	| ReadableStream
+	| Readable
+	| NodeJS.ReadableStream;
 
 export interface BlobLike {
 	readonly size: number;
@@ -51,6 +59,8 @@ export interface UploadFileRequest {
 	folderId: string;
 	file: UploadFileInput;
 	fileName: string;
+	fileSize?: number;
+	onProgress?: (bytesUploaded: number, totalBytes: number) => void;
 }
 
 export interface UploadFileResponse {

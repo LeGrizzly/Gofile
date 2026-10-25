@@ -35,10 +35,29 @@ export function isReadableStream(value: unknown): value is ReadableStream {
 }
 
 /**
+ * Type guard checking if the value is a Node.js ReadableStream.
+ */
+export function isNodeReadableStream(value: unknown): value is NodeJS.ReadableStream {
+	return (
+		typeof value === "object" &&
+		value !== null &&
+		"pipe" in value &&
+		typeof (value as { pipe: unknown }).pipe === "function" &&
+		"on" in value &&
+		typeof (value as { on: unknown }).on === "function"
+	);
+}
+
+/**
  * Type guard checking if the value is a valid UploadFileInput.
  */
 export function isUploadFileInput(value: unknown): value is UploadFileInput {
-	return isBlob(value) || isBufferOrUint8Array(value) || isReadableStream(value);
+	return (
+		isBlob(value) ||
+		isBufferOrUint8Array(value) ||
+		isReadableStream(value) ||
+		isNodeReadableStream(value)
+	);
 }
 
 /**
@@ -77,6 +96,16 @@ export async function toBlob(file: UploadFileInput): Promise<Blob> {
 	}
 	if (isReadableStream(file)) {
 		return await new Response(file).blob();
+	}
+	if (isNodeReadableStream(file)) {
+		const chunks: Uint8Array[] = [];
+		for await (const chunk of file) {
+			chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : (chunk as Uint8Array));
+		}
+		const combined = Buffer.concat(chunks);
+		const copy = new Uint8Array(combined.length);
+		copy.set(combined);
+		return new Blob([copy.buffer]);
 	}
 	throw new TypeError(
 		"Unsupported file type for upload. Expected Blob, Buffer, Uint8Array, or ReadableStream."
