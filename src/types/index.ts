@@ -1,4 +1,38 @@
+import type { Readable } from "node:stream";
+
 // Domain types for Gofile API
+
+export type UploadFileInput =
+	| Blob
+	| Buffer
+	| Uint8Array
+	| ReadableStream
+	| Readable
+	| NodeJS.ReadableStream;
+
+export interface BlobLike {
+	readonly size: number;
+	stream(): ReadableStream<Uint8Array>;
+	arrayBuffer(): Promise<ArrayBuffer>;
+}
+
+export interface GofileServerInfo {
+	name: string;
+	zone?: string;
+}
+
+export interface GofileServersResponse {
+	status: "ok" | "error";
+	data?: {
+		servers?: GofileServerInfo[];
+	};
+}
+
+export interface UpdateContentBody {
+	attribute: "name" | "public" | "description" | "expiry" | "tags";
+	attributeValue: string | boolean | number | null;
+	recursive?: boolean;
+}
 
 export interface CreateFolderRequest {
 	token: string;
@@ -23,8 +57,10 @@ export interface CreateFolderResponse {
 export interface UploadFileRequest {
 	token: string;
 	folderId: string;
-	file: Buffer | Blob | Uint8Array;
+	file: UploadFileInput;
 	fileName: string;
+	fileSize?: number;
+	onProgress?: (bytesUploaded: number, totalBytes: number) => void;
 }
 
 export interface UploadFileResponse {
@@ -65,7 +101,7 @@ export interface UploadResult {
 }
 
 export interface FileToUpload {
-	file: Buffer | Blob | Uint8Array;
+	file: UploadFileInput;
 	fileName: string;
 }
 
@@ -115,7 +151,7 @@ export interface AuthenticatedConfig {
 export interface UpdateContentRequest {
 	token: string;
 	contentId: string;
-	attribute: "public" | "description" | "expiry" | "tags";
+	attribute: "name" | "public" | "description" | "expiry" | "tags";
 	attributeValue: string | boolean | number | null;
 	recursive?: boolean;
 }

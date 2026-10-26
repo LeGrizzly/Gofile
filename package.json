@@ -37,7 +37,7 @@
 		"prepublishOnly": "npm run build"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.5.15",
+		"@biomejs/biome": "^2.6.3",
 		"@types/node": "^26.6.5",
 		"ts-node": "^10.9.2",
 		"typescript": "^7.0.2"

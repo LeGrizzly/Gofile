@@ -7,6 +7,7 @@ import type {
 	UploadResult,
 } from "../types/index.js";
 import { UploadEventEmitter } from "../utils/EventEmitter.js";
+import { getErrorMessage } from "../utils/TypeGuards.js";
 
 type UploadProgressEvents = {
 	uploadProgress: UploadProgress;
@@ -75,7 +76,7 @@ export class UploadProgressHandler
 					totalFiles: this.files.length,
 					fileName: fileToUpload.fileName,
 					completed: false,
-				} as UploadProgress);
+				});
 
 				try {
 					const uploadResponse = await this.repository.uploadFile({
@@ -110,12 +111,12 @@ export class UploadProgressHandler
 						fileId: result.fileId,
 						folderId: result.folderId,
 						parentFolder: result.parentFolder,
-					} as UploadProgress);
+					});
 				} catch (error) {
 					const result: UploadResult = {
 						success: false,
 						fileName: fileToUpload.fileName,
-						error: error instanceof Error ? error.message : "Unknown error occurred",
+						error: getErrorMessage(error),
 					};
 
 					results.push(result);
@@ -127,7 +128,7 @@ export class UploadProgressHandler
 						completed: true,
 						success: false,
 						error: result.error,
-					} as UploadProgress);
+					});
 				}
 			}
 
@@ -149,7 +150,7 @@ export class UploadProgressHandler
 			const finalResult: MultipleUploadResult = {
 				success: false,
 				results: [],
-				error: error instanceof Error ? error.message : "Unknown error occurred",
+				error: getErrorMessage(error),
 			};
 
 			this.emit("done", finalResult);
