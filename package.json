@@ -1,11 +1,12 @@
 {
-	"name": "gofile",
+	"name": "@LeGrizzly/gofile",
 	"version": "1.0.11",
 	"description": "Simple API for uploading files to Gofile.io",
 	"license": "ISC",
 	"author": "LeGrizzly",
 	"type": "module",
 	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
 	"files": [
 		"dist/**/*",
 		"README.md",
@@ -27,9 +28,11 @@
 	],
 	"scripts": {
 		"build": "tsc",
+		"copy": "node scripts/copy-file.ts",
+		"build:copy": "npm run build && npm run copy",
 		"start": "node dist/index.js",
 		"dev": "tsc --watch",
-		"test": "npm run build && node dist/tests/index.js",
+		"test": "npm run build && node dist/tests/index.js && node --test scripts/*.test.ts",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"lint:format": "biome format --write .",
@@ -37,8 +40,8 @@
 		"prepublishOnly": "npm run build"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.6.3",
-		"@types/node": "^26.6.5",
+		"@biomejs/biome": "^2.6.4",
+		"@types/node": "^26.6.6",
 		"ts-node": "^10.9.2",
 		"typescript": "^7.0.2"
 	},
