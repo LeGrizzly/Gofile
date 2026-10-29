@@ -88,6 +88,7 @@ export interface GofileConfig {
 	token?: string;
 	folderId?: string;
 	createSubfolder?: boolean;
+	defaultExpiryDays?: number;
 }
 
 export interface UploadResult {

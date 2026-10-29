@@ -64,6 +64,18 @@ export class UploadProgressHandler
 				});
 				folderId = folderResponse.data.id;
 				folderCode = folderResponse.data.code;
+
+				const expiryTimestamp = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+				try {
+					await this.repository.updateContent({
+						token: this.token,
+						contentId: folderId,
+						attribute: "expiry",
+						attributeValue: expiryTimestamp,
+					});
+				} catch {
+					// Non-blocking expiry setting
+				}
 			}
 
 			const results: UploadResult[] = [];

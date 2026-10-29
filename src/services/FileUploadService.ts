@@ -29,6 +29,18 @@ export class FileUploadService {
 					public: isPublic,
 				});
 				folderId = folderResponse.data.id;
+
+				const expiryTimestamp = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+				try {
+					await this.repository.updateContent({
+						token,
+						contentId: folderId,
+						attribute: "expiry",
+						attributeValue: expiryTimestamp,
+					});
+				} catch {
+					// Non-blocking expiry setting
+				}
 			}
 
 			const uploadResponse = await this.repository.uploadFile({
@@ -77,6 +89,18 @@ export class FileUploadService {
 				});
 				folderId = folderResponse.data.id;
 				folderCode = folderResponse.data.code;
+
+				const expiryTimestamp = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+				try {
+					await this.repository.updateContent({
+						token,
+						contentId: folderId,
+						attribute: "expiry",
+						attributeValue: expiryTimestamp,
+					});
+				} catch {
+					// Non-blocking expiry setting
+				}
 			}
 
 			const results: UploadResult[] = [];
