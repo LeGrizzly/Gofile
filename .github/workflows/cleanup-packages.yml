@@ -1,0 +1,29 @@
+name: 🧹 Cleanup Old GitHub Packages
+
+on:
+  schedule:
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      min_versions_to_keep:
+        description: 'Nombre de pré-versions récentes à conserver au minimum'
+        required: false
+        default: '3'
+
+permissions:
+  packages: write
+
+jobs:
+  prune-old-versions:
+    name: 🗑️ Prune Old @LeGrizzly/gofile Prerelease Versions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 🗑️ Delete Old Prerelease Versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'gofile'
+          package-type: 'npm'
+          min-versions-to-keep: ${{ github.event.inputs.min_versions_to_keep || 3 }}
+          delete-only-pre-release-versions: 'true'
+          token: ${{ secrets.PACKAGES_CLEANUP_TOKEN || secrets.GITHUB_TOKEN }}

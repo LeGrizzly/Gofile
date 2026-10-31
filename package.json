@@ -1,6 +1,7 @@
 {
 	"name": "@LeGrizzly/gofile",
 	"version": "1.0.12",
+	"build": "1",
 	"description": "Simple API for uploading files to Gofile.io",
 	"license": "ISC",
 	"author": "LeGrizzly",
@@ -12,6 +13,9 @@
 		"README.md",
 		"package.json"
 	],
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/LeGrizzly/gofile.git"
@@ -32,7 +36,10 @@
 		"build:copy": "npm run build && npm run copy",
 		"start": "node dist/index.js",
 		"dev": "tsc --watch",
+		"typecheck": "tsc --noEmit",
 		"test": "npm run build && node dist/tests/index.js && node --test scripts/*.test.ts",
+		"resolve:version": "node scripts/resolve-publish.ts",
+		"bump:version": "node scripts/bump-version.ts",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"lint:format": "biome format --write .",
