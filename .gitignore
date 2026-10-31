@@ -10,3 +10,6 @@ npm-debug.log*
 dist/
 build/
 out/
+
+# Ignore markdown files
+*.md
