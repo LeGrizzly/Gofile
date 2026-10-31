@@ -13,3 +13,5 @@ out/
 
 # Ignore markdown files
 *.md
+.github/copilot-instructions.md
+.github/copilot-commit-instructions.md
