@@ -1,0 +1,134 @@
+name: 🧪 Gofile Module — CI & GitHub Packages (Pure Pipeline)
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'fix/**'
+    tags:
+      - 'v*'
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.vscode/**'
+      - 'LICENSE'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+  workflow_dispatch:
+    inputs:
+      force_publish:
+        description: 'Forcer la publication sur GitHub Packages'
+        required: false
+        type: boolean
+        default: false
+      bump_type:
+        description: 'Type de bump de version sur main (patch, minor, major)'
+        required: false
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+
+concurrency:
+  group: gofile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  pipeline:
+    name: ⚡ Pipeline (Lint, Typecheck, Test, Build & Guarded Publish)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '25'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@LeGrizzly'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🔍 Lint Code (Biome)
+        run: npm run lint
+
+      - name: 🔬 Typecheck (TypeScript)
+        run: npm run typecheck
+
+      - name: 🧪 Run Automated Tests (Node Test)
+        run: node --test scripts/*.test.ts
+
+      - name: 🔄 Bump Version & Reset Build (main branch)
+        if: |
+          github.event_name != 'pull_request' &&
+          github.ref == 'refs/heads/main'
+        id: bump_info
+        env:
+          BUMP_TYPE: ${{ inputs.bump_type || 'patch' }}
+        run: npm run bump:version
+
+      - name: 🏷️ Resolve Package Version & npm Tag per Branch
+        id: pkg_info
+        run: npm run resolve:version
+
+      - name: 🔨 Build Package
+        run: npm run build
+
+      - name: 📦 Validate Package Bundle (Dry Run)
+        run: npm pack --dry-run
+
+      - name: 🚀 Publish to GitHub Packages
+        if: |
+          github.event_name != 'pull_request' &&
+          (
+            github.ref == 'refs/heads/main' ||
+            github.ref == 'refs/heads/develop' ||
+            startsWith(github.ref, 'refs/tags/v') ||
+            inputs.force_publish == true
+          )
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm publish --registry https://npm.pkg.github.com --tag "${{ steps.pkg_info.outputs.npm_tag }}" --ignore-scripts
+          echo "🎉 **Paquet publié sur GitHub Packages :** \`${{ steps.pkg_info.outputs.pkg_name }}@${{ steps.pkg_info.outputs.publish_version }}\` (Tag: \`${{ steps.pkg_info.outputs.npm_tag }}\`)" >> $GITHUB_STEP_SUMMARY
+
+      - name: 📌 Commit Version Bump, Tag & Sync to develop (main branch)
+        if: |
+          github.event_name != 'pull_request' &&
+          github.ref == 'refs/heads/main'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add package.json
+          git commit -m "chore(release): bump version to ${{ steps.bump_info.outputs.new_version }} and reset build to 1 [skip ci]" || echo "No changes to commit"
+          git tag -a "${{ steps.bump_info.outputs.git_tag }}" -m "Release ${{ steps.bump_info.outputs.git_tag }}"
+          git push origin main --follow-tags
+
+          echo "🔄 Syncing release commit to develop branch..."
+          git fetch origin develop
+          git checkout develop
+          git merge main --ff-only || git merge main -m "chore(release): sync ${{ steps.bump_info.outputs.git_tag }} from main [skip ci]"
+          git push origin develop
