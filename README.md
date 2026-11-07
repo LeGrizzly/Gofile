@@ -1,101 +1,147 @@
-# gofile.io TypeScript API
+# @LeGrizzly/gofile ☁️📤
 
-Une API TypeScript pour uploader des fichiers sur gofile.io, conçue avec les principes de clean code et clean architecture.
+[![TypeScript](https://img.shields.io/badge/TypeScript-7.0-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D24.0.0-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
+[![Biome](https://img.shields.io/badge/Code_Quality-Biome-60A5FA?style=flat-square&logo=biome)](https://biomejs.dev/)
 
-## 🚀 Fonctionnalités
+`@LeGrizzly/gofile` est un client TypeScript modulaire, robuste et sans dépendances superflues pour interagir avec l'API REST de l'hébergeur [Gofile.io](https://gofile.io). Il prend en charge l'upload de gros fichiers en streaming multipart, le suivi de progression en temps réel, la gestion d'arborescences de dossiers et l'obtention de liens directs.
 
-- Upload de fichiers vers gofile.io
-- Support TypeScript complet
-- Architecture propre et modulaire
-- Gestion d'erreurs robuste
-- Zéro dépendance externe
+---
+
+## ⚡ Fonctionnalités Clés
+
+- **Upload Multipart & Streaming** : Téléversement direct depuis un `Buffer` ou un `ReadableStream` Node.js vers les serveurs Gofile.
+- **Résolution Dynamique du Meilleur Serveur** : Requête automatique du serveur d'upload optimal (`getServer()`) avant chaque transfert.
+- **Suivi d'Avancement Réactif** : Émission d'événements (`progress`, `complete`, `error`) via `UploadProgressHandler` et `EventEmitter`.
+- **Gestion Complète de Contenu (`ContentService`)** : Création de répertoires distants, organisation de dossiers, suppression et modification des options de partage (mots de passe, expiration, tags).
+- **Zéro Dépendance Runtime** : Utilise nativement les APIs web standard (`fetch`, `FormData`, `crypto`) intégrées à Node.js 24+.
+- **Typage Strict** : Modélisation complète des réponses Gofile et des paramètres d'upload.
+
+---
 
 ## 📦 Installation
 
 ```bash
-npm install
-npm run build
+npm install @LeGrizzly/gofile
 ```
 
-## 🛠️ Configuration
+---
+
+## 💡 Exemples d'Utilisation
+
+### 1. Upload Simple d'un Fichier
 
 ```typescript
-import { GofileAPI } from "./dist/index.js";
+import { GofileAPI } from "@LeGrizzly/gofile";
+import { readFile } from "node:fs/promises";
 
-const api = new GofileAPI({});
-```
+const api = new GofileAPI({
+    token: "votre_token_compte_gofile_optionnel",
+});
 
-## 💡 Utilisation
+// Lecture du fichier sur disque
+const fileBuffer = await readFile("./archive_album.zip");
 
-### Upload simple d'un fichier
-
-```typescript
-import { GofileAPI } from "./dist/index.js";
-import { readFile } from "fs/promises";
-
-const api = new GofileAPI({});
-
-// Lire un fichier depuis le système de fichiers
-const fileBuffer = await readFile("./path/to/your/file.jpg");
-
-// Upload du fichier
-const result = await api.uploadFile(fileBuffer, "my-file.jpg", "YOUR_TOKEN");
+// Upload vers Gofile
+const result = await api.uploadFile(fileBuffer, "archive_album.zip");
 
 if (result.success) {
-	console.log("Lien de téléchargement:", result.downloadPage);
+    console.log("Fichier téléversé avec succès !");
+    console.log("Page de téléchargement :", result.downloadPage);
+    console.log("Identifiant du fichier :", result.fileId);
 } else {
-	console.error("Erreur:", result.error);
+    console.error("Échec du téléversement :", result.error);
 }
 ```
 
-### Upload vers un dossier existant
+### 2. Upload avec Suivi de Progression en Temps Réel
 
 ```typescript
-const result = await api.uploadFileToFolder(fileBuffer, "my-file.jpg");
+import { GofileAPI } from "@LeGrizzly/gofile";
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
+
+const api = new GofileAPI({ token: "votre_token_gofile" });
+
+const filePath = "./grosses_discographie.zip";
+const fileStats = await stat(filePath);
+
+// Utilisation du gestionnaire de progression
+const progressHandler = api.createProgressHandler();
+
+progressHandler.on("progress", (data) => {
+    console.log(`Progression : ${data.percentage.toFixed(2)}% (${data.transferredBytes} / ${data.totalBytes} octets)`);
+});
+
+progressHandler.on("complete", (result) => {
+    console.log("Téléversement terminé :", result.downloadPage);
+});
+
+// Exécution de l'upload avec le handler attaché
+await api.uploadWithProgress(filePath, {
+    fileName: "grosses_discographie.zip",
+    folderId: "mon_folder_id_optionnel",
+    progressHandler,
+});
 ```
 
-## 🏗️ Architecture
+### 3. Création et Organisation de Dossiers
 
-Le projet suit les principes de clean architecture :
+```typescript
+import { GofileAPI } from "@LeGrizzly/gofile";
 
-```text
-src/
-├── types/              # Types et interfaces TypeScript
-├── interfaces/         # Ports (contrats d'interface)
-├── repositories/       # Adapters (implémentations)
-├── services/          # Use cases (logique métier)
-├── utils/             # Utilitaires
-├── index.ts           # Point d'entrée principal
-└── example.ts         # Exemple d'utilisation
+const api = new GofileAPI({ token: "votre_token_gofile" });
+
+// Création d'un dossier racine
+const folder = await api.createFolder({
+    parentFolderId: "root",
+    folderName: "Discographie Freeze Corleone",
+});
+
+console.log("Dossier créé avec succès :", folder.id);
+
+// Définition d'un mot de passe ou d'une description sur le dossier
+await api.setFolderOption(folder.id, "description", "Albums haute fidélité");
 ```
 
-### Couches architecturales
+---
 
-1. **Domain Layer** (`types/`) : Entités et types métier
-2. **Application Layer** (`services/`) : Cas d'usage et logique métier
-3. **Infrastructure Layer** (`repositories/`) : Implémentations concrètes
-4. **Interface Layer** (`index.ts`) : API publique
+## 🏗️ Architecture Interne
 
-## 🔧 Scripts disponibles
+Le package suit les principes de Clean Architecture et de séparation des responsabilités :
+
+```
+Gofile/src
+├── services/
+│   ├── FileUploadService.ts       # Logique d'envoi multipart & négociation serveur
+│   ├── ContentService.ts          # Opérations sur les dossiers et fichiers distants
+│   ├── AuthenticationService.ts   # Validation de tokens et gestion de sessions
+│   └── UploadProgressHandler.ts   # Calculs d'octets et émission d'événements
+├── repositories/
+│   └── GofileRepository.ts        # Passerelle HTTP vers les endpoints API Gofile
+├── interfaces/
+│   └── IGofileRepository.ts       # Contrat d'abstraction pour l'inversion de dépendance
+└── utils/
+    ├── EventEmitter.ts            # Gestionnaire d'événements typé léger
+    └── TypeGuards.ts              # Prédicats de validation runtime des réponses
+```
+
+---
+
+## 🛠️ Scripts & Développement
 
 ```bash
-npm run build    # Compile TypeScript vers JavaScript
-npm run example        # Lance l'exemple
+npm run build         # Compilation TypeScript vers dist/
+npm run copy          # Copie des fichiers utilitaires
+npm run build:copy    # Build complet avec copie
+npm run typecheck     # Contrôle de typage strict
+npm run lint          # Contrôle Biome
+npm run lint:fix      # Correction automatique Biome
+npm test              # Exécution des tests unitaires
 ```
 
-## 🧪 Exemple complet
+---
 
-Voir `src/example.ts` pour un exemple détaillé d'utilisation.
+## 📄 Licence
 
-## 🤝 Contribution
-
-Ce projet suit les principes du clean code :
-
-- **Single Responsibility Principle** : Chaque classe a une responsabilité unique
-- **Dependency Inversion** : Les dépendances sont injectées via les interfaces
-- **Interface Segregation** : Interfaces spécifiques et cohésives
-- **Don't Repeat Yourself** : Code réutilisable et modulaire
-
-## 📝 License
-
-ISC License
+Développé par **LeGrizzly** — Licence ISC.
