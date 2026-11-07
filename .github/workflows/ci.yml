@@ -92,6 +92,23 @@ jobs:
         id: pkg_info
         run: npm run resolve:version
 
+      - name: 🛡️ Verify Tag & Version Do Not Exist
+        if: |
+          github.event_name != 'pull_request' &&
+          (
+            github.ref == 'refs/heads/main' ||
+            github.ref == 'refs/heads/develop' ||
+            startsWith(github.ref, 'refs/tags/v') ||
+            inputs.force_publish == true
+          )
+        env:
+          GIT_TAG: ${{ steps.bump_info.outputs.git_tag }}
+          PUBLISH_VERSION: ${{ steps.pkg_info.outputs.publish_version }}
+          PKG_NAME: ${{ steps.pkg_info.outputs.pkg_name }}
+          FORCE_PUBLISH: ${{ inputs.force_publish || 'false' }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run verify:tag
+
       - name: 🔨 Build Package
         run: npm run build
 

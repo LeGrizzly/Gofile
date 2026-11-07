@@ -39,6 +39,7 @@
 		"typecheck": "tsc --noEmit",
 		"test": "npm run build && node dist/tests/index.js && node --test scripts/*.test.ts",
 		"resolve:version": "node scripts/resolve-publish.ts",
+		"verify:tag": "node scripts/verify-tag.ts",
 		"bump:version": "node scripts/bump-version.ts",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
